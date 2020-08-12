@@ -19,4 +19,4 @@ ani.bloch_animate(x, y, z, plot_traj=True, duration=2, fps=15,
                   fig_kwargs={'figure': "A Simple Animation", 'size': (500, 500), 'bgcolor':(1., 1., 1.), 'fgcolor':(0, 0, 0)},
                   scatter_kwargs={'scale_mode':'none', 'colormap': 'gist_heat', 'resolution':32,'scale_factor': 0.1},
                   line_kwargs={'colormap':'gist_heat', 'tube_radius': 0.01, 'tube_sides':12},
-                  fname='outputs/simple_Animation.gif')
+                  fname='outputs/simple_Animation.mp4')

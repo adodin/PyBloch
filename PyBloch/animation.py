@@ -18,7 +18,7 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
     :param x, y, z: (n_traj, n_time) array of Cartesian Bloch coordinates to be plotted (see select_trajectories)
     :param frame: int Frame to Plot
     :param plot_traj: boolean show trajectory leading up to state as a line
-    :param fname: str or None Target file name
+    :param fname: str or None Target file name (extension determined from this file) NB requires codec in ffmpeg
     :param duration: float default 1 length of animation in seconds
     :param fps: float default 15 animation frame rate (frames per second)
     :param show_fig: boolean show figure or not
@@ -35,6 +35,12 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
     if fps > pps:
         print("Warning: Desired Frame Rate > Simulation. Output Frame Rate set by Simulation")
         fps = pps
+
+    # Determine if gif or video
+    if fname[-3:]=='gif':
+        is_gif = True
+    else:
+        is_gif = False
 
     # Initialize Plot and set Frame function
     if plot_traj:
@@ -58,5 +64,8 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
 
     # Make Video Clip and Save as Gif
     animation = mpy.VideoClip(make_frame, duration=duration)
-    animation.write_gif(fname, fps=fps)
+    if is_gif:
+        animation.write_gif(fname, fps=fps, **save_kwargs)
+    else:
+        animation.write_videofile(fname, fps=fps, **save_kwargs)
 
