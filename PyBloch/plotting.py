@@ -61,7 +61,7 @@ def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[
     :param axis_kwargs: kwargs for mlab axis fucntion
     :param scatter_kwargs: kwargs for mlab points3d function
     :param line_kwargs: kwargs for mlab plot3d function
-    :return: scatter points handle
+    :return: scatter points handle and [trajetory handles] if plotting
     """
     # Grab Number of Trajectories and Frames
     assert x.shape == y.shape == z.shape
@@ -102,6 +102,15 @@ def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[
 
 
 def update_bloch(x, y, z, frame, pts, trajs=None, view=None):
+    """ Updates Scatter and (optionally) Trajectory and Camera data without Making a new plot
+
+    :param x, y, z: (n_traj, n_time) array of Cartesian Bloch coordinates to be plotted (see select_trajectories)
+    :param frame: int Frame to Plot
+    :param pts: mlab.points3D output of scatter poitns to be updated
+    :param trajs: [mlab.plot3D outputs] or None Trajectories to be updated if any
+    :param view: [phi_cam, theta_cam, r_cam, (x_focal, y_focal, z_focal)] giving new camera position and focal point
+    :return:
+    """
     # Update Scatter Points
     pts.mlab_source.set(x=x[:, frame], y=y[:, frame], z=z[:, frame], scalars=z[:,frame])
 
@@ -109,4 +118,5 @@ def update_bloch(x, y, z, frame, pts, trajs=None, view=None):
     if trajs is not None:
         for traj, xt, yt, zt in zip(trajs, x, y, z):
             traj.mlab_source.reset(x=xt[:frame+1], y=yt[:frame+1], z=zt[:frame+1], scalars=zt[:frame+1])
-    mlab.view(*view)
+    if view is not None:
+        mlab.view(*view)
