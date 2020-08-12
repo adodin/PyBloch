@@ -9,7 +9,7 @@ import PyBloch.plotting as plt
 import moviepy.editor as mpy
 
 
-def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1,
+def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
                fig_kwargs={'bgcolor': (1, 1, 1), 'fgcolor':(0, 0, 0)},
                mesh_kwargs={'color': (0.5, 0.5, 0.5), 'opacity': 0.25, 'tube_radius': 0.01},
                scatter_kwargs={}, line_kwargs={}, save_kwargs={}):
@@ -19,6 +19,8 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1,
     :param frame: int Frame to Plot
     :param plot_traj: boolean show trajectory leading up to state as a line
     :param fname: str or None Target file name
+    :param duration: float default 1 length of animation in seconds
+    :param fps: float default 15 animation frame rate (frames per second)
     :param show_fig: boolean show figure or not
     :param fig_kwargs: kwargs for mlab figure function
     :param axis_kwargs: kwargs for mlab axis fucntion
@@ -29,7 +31,10 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1,
     # Determine Required FPS
     assert x.shape == y.shape == z.shape
     n_traj, n_time = x.shape
-    fps = n_time/duration
+    pps = n_time/duration        # trajectory points per second
+    if fps > pps:
+        print("Warning: Desired Frame Rate > Simulation. Output Frame Rate set by Simulation")
+        fps = pps
 
     # Initialize Plot and set Frame function
     if plot_traj:
@@ -38,14 +43,16 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1,
                                     line_kwargs=line_kwargs, save_kwargs={})
 
         def make_frame(t):
-            plt.update_bloch(x, y, z, int(np.round(t*fps)), pts, trajs)
+            i = int(np.round(t * pps))  # Finds simulation frame consistent with float time
+            plt.update_bloch(x, y, z, i, pts, trajs)
             return mlab.screenshot()
     else:
         pts = plt.bloch_plot(x, y, z, 0, plot_traj, None, False,
                                     fig_kwargs, mesh_kwargs, scatter_kwargs, line_kwargs, save_kwargs)
 
         def make_frame(t):
-            plt.update_bloch(x, y, z, int(np.round(t*fps)), pts)
+            i = int(np.round(t * pps))  # Finds simulation frame consistent with float time
+            plt.update_bloch(x, y, z, i, pts)
             return mlab.screenshot()
 
 
