@@ -56,6 +56,7 @@ def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[
     :param plot_traj: boolean show trajectory leading up to state as a line
     :param fname: str or None Target file name
     :param show_fig: boolean show figure or not
+    :param view: [phi_cam, theta_cam, r_cam, (x_focal, y_focal, z_focal)] giving camera position and focal point
     :param fig_kwargs: kwargs for mlab figure function
     :param axis_kwargs: kwargs for mlab axis fucntion
     :param scatter_kwargs: kwargs for mlab points3d function
@@ -72,7 +73,7 @@ def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[
 
     # Draw Sphere Mesh
     lines = PyBloch.formatting.make_sphere(1.)
-    mlab.view(30, 60, 10., (0, 0, 0))
+    mlab.view(*view)
     for l in lines:
         xl, yl ,zl = l
         mlab.plot3d(xl, yl, zl, **mesh_kwargs)
@@ -99,7 +100,8 @@ def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[
             mlab.show()
         return pts
 
-def update_bloch(x, y, z, frame, pts, trajs=None):
+
+def update_bloch(x, y, z, frame, pts, trajs=None, view=None):
     # Update Scatter Points
     pts.mlab_source.set(x=x[:, frame], y=y[:, frame], z=z[:, frame], scalars=z[:,frame])
 
@@ -107,3 +109,4 @@ def update_bloch(x, y, z, frame, pts, trajs=None):
     if trajs is not None:
         for traj, xt, yt, zt in zip(trajs, x, y, z):
             traj.mlab_source.reset(x=xt[:frame+1], y=yt[:frame+1], z=zt[:frame+1], scalars=zt[:frame+1])
+    mlab.view(*view)
