@@ -9,7 +9,7 @@ import PyBloch.plotting as plt
 import moviepy.editor as mpy
 
 
-def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
+def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15, view=[30, 60, 10, (0, 0, 0)],
                fig_kwargs={'bgcolor': (1, 1, 1), 'fgcolor':(0, 0, 0)},
                mesh_kwargs={'color': (0.5, 0.5, 0.5), 'opacity': 0.25, 'tube_radius': 0.01},
                scatter_kwargs={}, line_kwargs={}, save_kwargs={}):
@@ -21,6 +21,7 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
     :param fname: str or None Target file name (extension determined from this file) NB requires codec in ffmpeg
     :param duration: float default 1 length of animation in seconds
     :param fps: float default 15 animation frame rate (frames per second)
+    :param view: [phi_cam, theta_cam, r_cam, (x_focal, y_focal, z_focal)] giving camera position and focal point
     :param show_fig: boolean show figure or not
     :param fig_kwargs: kwargs for mlab figure function
     :param axis_kwargs: kwargs for mlab axis fucntion
@@ -44,7 +45,7 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
 
     # Initialize Plot and set Frame function
     if plot_traj:
-        pts, trajs = plt.bloch_plot(x=x, y=y, z=z, frame=0, plot_traj=plot_traj, fname=None, show_fig=False,
+        pts, trajs = plt.bloch_plot(x=x, y=y, z=z, frame=0, plot_traj=plot_traj, fname=None, show_fig=False, view=view,
                                     fig_kwargs=fig_kwargs, mesh_kwargs=mesh_kwargs, scatter_kwargs=scatter_kwargs,
                                     line_kwargs=line_kwargs, save_kwargs={})
 
@@ -53,16 +54,16 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15,
             plt.update_bloch(x, y, z, i, pts, trajs)
             return mlab.screenshot()
     else:
-        pts = plt.bloch_plot(x, y, z, 0, plot_traj, None, False,
-                                    fig_kwargs, mesh_kwargs, scatter_kwargs, line_kwargs, save_kwargs)
+        pts = plt.bloch_plot(x, y, z, 0, plot_traj, x=x, y=y, z=z, frame=0, plot_traj=plot_traj, fname=None,
+                             show_fig=False, view=view,fig_kwargs=fig_kwargs, mesh_kwargs=mesh_kwargs,
+                             scatter_kwargs=scatter_kwargs, line_kwargs=line_kwargs, save_kwargs={})
 
         def make_frame(t):
             i = int(np.round(t * pps))  # Finds simulation frame consistent with float time
             plt.update_bloch(x, y, z, i, pts)
             return mlab.screenshot()
 
-
-    # Make Video Clip and Save as Gif
+    # Make Video Clip and Save to desired format
     animation = mpy.VideoClip(make_frame, duration=duration)
     if is_gif:
         animation.write_gif(fname, fps=fps, **save_kwargs)
