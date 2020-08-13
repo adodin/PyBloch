@@ -119,3 +119,44 @@ def update_bloch(x, y, z, frame, pts, trajs=None, view=None):
             traj.mlab_source.reset(x=xt[:frame+1], y=yt[:frame+1], z=zt[:frame+1], scalars=zt[:frame+1])
     if view is not None:
         mlab.view(*view)
+
+
+def bloch_axis(u, v, w, frame, fname=None, show_fig=True, view=[30, 60, 10., (0, 0, 0)],
+               fig_kwargs={'bgcolor': (1, 1, 1), 'fgcolor':(0, 0, 0)},
+               mesh_kwargs={'color': (0.5, 0.5, 0.5), 'opacity': 0.25, 'tube_radius': 0.01},
+               quiver_kwargs={'resolution': 32, 'scale_mode': 'vector', 'line_width':5.0},
+               save_kwargs={}):
+    # Grab Number of Trajectories and Frames
+    assert u.shape == v.shape == w.shape
+    n_traj, n_time = u.shape
+    assert frame < n_time
+
+    # Make MLab Figure
+    fig = mlab.figure(**fig_kwargs)
+
+    # Draw Sphere Mesh
+    lines = PyBloch.formatting.make_sphere(1.)
+    mlab.view(*view)
+    for l in lines:
+        xl, yl, zl = l
+        mlab.plot3d(xl, yl, zl, **mesh_kwargs)
+
+    zeros = np.zeros_like(u[:, frame])
+    # Add Points
+    quiv = mlab.quiver3d(zeros, zeros, zeros, u[:, frame], v[:, frame], w[:, frame], **quiver_kwargs)
+
+    # Position Camera and adds Orientation Axes
+    mlab.orientation_axes()
+    save_fig(fname, **save_kwargs)
+    if show_fig:
+        mlab.show()
+    return quiv
+
+
+def update_axis(u, v, w, frame, quiv, view=None):
+    # Update Scatter Points
+    quiv.mlab_source.set(u=u[:, frame], v=v[:, frame], w=w[:, frame])
+    print("Updating Axes")
+
+    if view is not None:
+        mlab.view(*view)

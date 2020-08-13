@@ -71,3 +71,38 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15, view=
     else:
         animation.write_videofile(fname, fps=fps, **save_kwargs)
 
+
+def axis_animate(u, v, w, fname=None, duration=1, fps=15, view=[30, 60, 10, (0, 0, 0)],
+                 fig_kwargs={'bgcolor': (1, 1, 1), 'fgcolor':(0, 0, 0)},
+                 mesh_kwargs={'color': (0.5, 0.5, 0.5), 'opacity': 0.25, 'tube_radius': 0.01},
+                 quiver_kwargs={}, save_kwargs={}):
+    mlab.options.offscreen = True
+    # Determine Required FPS
+    assert u.shape == v.shape == w.shape
+    n_traj, n_time = u.shape
+    pps = n_time/duration        # trajectory points per second
+    if fps > pps:
+        print("Warning: Desired Frame Rate > Simulation. Output Frame Rate set by Simulation")
+        fps = pps
+
+    # Determine if gif or video
+    if fname[-3:]=='gif':
+        is_gif = True
+    else:
+        is_gif = False
+
+    quiv = plt.bloch_axis(u=u, v=v, w=w, frame=0, fname=None,
+                         show_fig=False, view=view, fig_kwargs=fig_kwargs, mesh_kwargs=mesh_kwargs,
+                         quiver_kwargs=quiver_kwargs, save_kwargs={})
+
+    def make_frame(t):
+        i = int(np.round(t * pps))  # Finds simulation frame consistent with float time
+        plt.update_axis(u, v, w, i, quiv)
+        return mlab.screenshot()
+
+    # Make Video Clip and Save to desired format
+    animation = mpy.VideoClip(make_frame, duration=duration)
+    if is_gif:
+        animation.write_gif(fname, fps=fps, **save_kwargs)
+    else:
+        animation.write_videofile(fname, fps=fps, **save_kwargs)
