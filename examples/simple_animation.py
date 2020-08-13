@@ -14,7 +14,6 @@ x = xi*np.sin(xi*t)*np.cos(xi*t)
 y = xi*np.cos(xi*t)*np.cos(xi*t)
 z = xi*np.sin(xi*t)
 
-mlab.options.offscreen=True
 ani.bloch_animate(x, y, z, plot_traj=True, duration=2, fps=15,
                   fig_kwargs={'figure': "A Simple Animation", 'size': (500, 500), 'bgcolor':(1., 1., 1.), 'fgcolor':(0, 0, 0)},
                   scatter_kwargs={'scale_mode':'none', 'colormap': 'gist_heat', 'resolution':32,'scale_factor': 0.1},

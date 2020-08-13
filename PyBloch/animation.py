@@ -29,6 +29,7 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15, view=
     :param line_kwargs: kwargs for mlab plot3d function
     :return: scatter points handle
     """
+    mlab.options.offscreen = True
     # Determine Required FPS
     assert x.shape == y.shape == z.shape
     n_traj, n_time = x.shape
@@ -54,7 +55,7 @@ def bloch_animate(x, y, z, plot_traj=True, fname=None, duration=1, fps=15, view=
             plt.update_bloch(x, y, z, i, pts, trajs)
             return mlab.screenshot()
     else:
-        pts = plt.bloch_plot(x, y, z, 0, plot_traj, x=x, y=y, z=z, frame=0, plot_traj=plot_traj, fname=None,
+        pts = plt.bloch_plot(x=x, y=y, z=z, frame=0, plot_traj=plot_traj, fname=None,
                              show_fig=False, view=view,fig_kwargs=fig_kwargs, mesh_kwargs=mesh_kwargs,
                              scatter_kwargs=scatter_kwargs, line_kwargs=line_kwargs, save_kwargs={})
 

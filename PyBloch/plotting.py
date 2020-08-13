@@ -30,8 +30,7 @@ def select_trajectories(x, y, z, n_plot):
     # Grab and validate trajectory indexes
     n_traj, n_time = x.shape
     assert x.shape == y.shape == z.shape
-    assert n_plot is int or n_plot[0] is int
-    if n_plot is int:
+    if type(n_plot) is int:
         assert n_plot <= n_traj
         n_plot = np.random.choice(n_traj, n_plot, replace=False)
     else:
