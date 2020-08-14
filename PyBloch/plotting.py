@@ -20,30 +20,6 @@ def save_fig(fname, **kwargs):
         mlab.savefig(fname, **kwargs)
 
 
-def select_trajectories(x, y, z, n_plot):
-    """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
-
-    :param x ,y, z: (n_traj, n_time) array of Cartesian Bloch spehere coordinates
-    :param n_plot: int or [int] how many (randomly chosen) or which trajectories to plot
-    :return: x_plot, y_plot, z_plot n_plot trajectories
-    """
-    # Grab and validate trajectory indexes
-    n_traj, n_time = x.shape
-    assert x.shape == y.shape == z.shape
-    if type(n_plot) is int:
-        assert n_plot <= n_traj
-        n_plot = np.random.choice(n_traj, n_plot, replace=False)
-    else:
-        assert max(n_plot) < n_traj
-
-    # Select and return trajectories
-    x_plot = np.array([x[i] for i in n_plot])
-    y_plot = np.array([y[i] for i in n_plot])
-    z_plot = np.array([z[i] for i in n_plot])
-
-    return x_plot, y_plot, z_plot
-
-
 def bloch_plot(x, y, z, frame, plot_traj=True, fname=None, show_fig=True, view=[30, 60, 10., (0, 0, 0)],
                fig_kwargs={'bgcolor': (1, 1, 1), 'fgcolor':(0, 0, 0)},
                mesh_kwargs={'color': (0.5, 0.5, 0.5), 'opacity': 0.25, 'tube_radius': 0.01},

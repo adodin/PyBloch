@@ -6,6 +6,30 @@ Written By: Amro Dodin (Willard Group - MIT)
 import numpy as np
 
 
+def select_trajectories(x, y, z, n_plot):
+    """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
+
+    :param x ,y, z: (n_traj, n_time) array of Cartesian Bloch spehere coordinates
+    :param n_plot: int or [int] how many (randomly chosen) or which trajectories to plot
+    :return: x_plot, y_plot, z_plot n_plot trajectories
+    """
+    # Grab and validate trajectory indexes
+    n_traj, n_time = x.shape
+    assert x.shape == y.shape == z.shape
+    if type(n_plot) is int:
+        assert n_plot <= n_traj
+        n_plot = np.random.choice(n_traj, n_plot, replace=False)
+    else:
+        assert max(n_plot) < n_traj
+
+    # Select and return trajectories
+    x_plot = np.array([x[i] for i in n_plot])
+    y_plot = np.array([y[i] for i in n_plot])
+    z_plot = np.array([z[i] for i in n_plot])
+
+    return x_plot, y_plot, z_plot
+
+
 def calculate_axes(x, y, z):
     """ Computes the instantaneous axes of rotation (as euler vectors) neglecting dephasing and dissipation
 
