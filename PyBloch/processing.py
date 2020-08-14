@@ -29,7 +29,7 @@ def calculate_axes(x, y, z):
 
 
 def norm_correlate(u, v, w, t_0=0):
-    assert u.shapw == v.shape == w.shape
+    assert u.shape == v.shape == w.shape
     n_traj, n_time = u.shape
 
     rad = np.sqrt(u**2 + v**2 + w**2)
@@ -47,7 +47,7 @@ def norm_correlate(u, v, w, t_0=0):
 
 
 def anisotropy_correlate(u, v, w, t_0=0):
-    assert u.shapw == v.shape == w.shape
+    assert u.shape == v.shape == w.shape
     n_traj, n_time = u.shape
 
     r_0 = np.array([u[:, t_0], v[:, t_0], w[:, t_0]])
