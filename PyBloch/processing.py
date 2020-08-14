@@ -26,3 +26,39 @@ def calculate_axes(x, y, z):
     theta = np.sum(r * dr,  axis=0)/np.sum(r * r, axis=0)
 
     return rot * theta
+
+
+def norm_correlate(u, v, w, t_0=0):
+    assert u.shapw == v.shape == w.shape
+    n_traj, n_time = u.shape
+
+    rad = np.sqrt(u**2 + v**2 + w**2)
+    rad_0 = rad[:, t_0]
+    mu_0 = np.mean(rad_0)
+    corr = []
+
+    for i in range(n_time-t_0):
+        rad_t = rad[:, t_0+i]
+        mu_t = np.mean(rad_t)
+        sig_0t = np.mean(rad_0*rad_t)
+        corr.append(sig_0t - mu_t*mu_0)
+
+    return np.array(corr)
+
+
+def anisotropy_correlate(u, v, w, t_0=0):
+    assert u.shapw == v.shape == w.shape
+    n_traj, n_time = u.shape
+
+    r_0 = np.array([u[:, t_0], v[:, t_0], w[:, t_0]])
+    mu_0 = np.mean(r_0, axis=-1)
+    corr = []
+
+    for i in range(n_time-t_0):
+        r_t = np.array([u[:, t_0+i], v[:, t_0+i], w[:, t_0+i]])
+        mu_t = np.mean(r_t, axis=-1)
+        mu_0t = np.sum(mu_0 * mu_t)
+        sig_0t = np.mean(np.sum(r_0 * r_t, axis =0))
+        corr.append(sig_0t - mu_0t)
+
+    return np.array(corr)
