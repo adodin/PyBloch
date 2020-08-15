@@ -4,6 +4,7 @@ Written By: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
+import scipy.stats
 
 
 def select_trajectories(x, y, z, n_plot):
@@ -86,3 +87,41 @@ def anisotropy_correlate(u, v, w, t_0=0):
         corr.append(sig_0t - mu_0t)
 
     return np.array(corr)
+
+
+def gaussian_kde(x, y, z, kde_kwargs={}):
+    """
+
+    :param x, y, z: (n_sample) length set of cartesian coordinate samples
+    :param kde_kwargs:  kwargs for kde function, can be:
+         bw_method: band width selection str 'scott' or 'silverman' for rule of thumb, scalar for predetermined
+    :return: a callable density estimate. p_est([x_aarr,y_arr,z_arr]) returns values at sets of points
+         see scipy.stats.gaussian_kde for info
+    """
+    return scipy.stats.gaussian_kde(np.array([x, y, z]), **kde_kwargs)
+
+
+def evaluate_kde(x, y, z, p_est):
+    """ Evaluates p_est on a grid defined by the arrays, x, y, z
+
+    :param x, y, z: 1D Arrays or Mesh Grids defining grid points
+    :param p_est:
+    :return: distribution evaluated on grid if x,y,z are Mesh grids. Otherwise return X_grid, y_grid,z_grid , dist
+    """
+    assert x.shape == y.shape == z.shape
+    # Checks if points are an array or a meshgrid
+    is_array = len(x.shape) == 1
+
+    # If points are arrays, convert to grids
+    if is_array:
+        x, y, z = np.meshgrid(x, y, z)
+
+    # Flatten Mesh Grids into point list, evaluate and reshape into grids
+    pts = np.vstack([x.ravel(), y.ravel(), z.ravel()])
+    dist = p_est(pts)
+    dist = np.reshape(dist, x.shape)
+
+    if is_array:
+        return x, y, z, dist
+    else:
+        return dist
