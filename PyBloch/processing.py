@@ -89,12 +89,11 @@ def anisotropy_correlate(u, v, w, t_0=0):
     return np.array(corr)
 
 
-def gaussian_kde(x, y, z, kde_kwargs={}):
+def gaussian_kde(x, y, z, h=None):
     """
 
     :param x, y, z: (n_sample) length set of cartesian coordinate samples
-    :param kde_kwargs:  kwargs for kde function, can be:
-         bw_method: band width selection str 'scott' or 'silverman' for rule of thumb, scalar for predetermined
+    :param h: KDE bandwidth. Use Scott's rule of thumb if None (default: None)
     :return: a callable density estimate. p_est([x_aarr,y_arr,z_arr]) returns values at sets of points
          see scipy.stats.gaussian_kde for info
     """
