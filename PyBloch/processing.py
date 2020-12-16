@@ -4,7 +4,6 @@ Written By: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import scipy.stats
 
 
 def select_trajectories(x, y, z, n_plot):
@@ -90,18 +89,34 @@ def anisotropy_correlate(u, v, w, t_0=0):
 
 
 def gaussian_kde(x, y, z, h=None):
-    """
+    """ Generate A Gaussian KDE function using a set of samples.
 
     :param x, y, z: (n_sample) length set of cartesian coordinate samples
     :param h: KDE bandwidth. Use Scott's rule of thumb if None (default: None)
-    :return: a callable density estimate. p_est([x_aarr,y_arr,z_arr]) returns values at sets of points
-         see scipy.stats.gaussian_kde for info
+    :return: a function containing the KDE to be called on an array or Meshgrid of points
     """
-    return scipy.stats.gaussian_kde(np.array([x, y, z]), **kde_kwargs)
+    assert len(x) == len(y) ==len(z)
+    n_sample = len(x)
+
+    # Scott's Rule Bandwidth Estimation
+    if h is None:
+        h = n_sample**(-1/7)
+
+    # Define Kernel Density Estimator
+    def kde(X, Y, Z):
+        assert X.shape ==Y.shape == Z.shape
+        density = np.zeros_like(X)
+        for xx, yy, zz in zip(x, y, z):
+            density += np.exp(-((X-xx)**2 + (Y-yy)**2 + (Z-zz)**2)/h**2)
+        density = density/np.sum(density)
+        return density
+    kde.h = h
+
+    return kde
 
 
 def evaluate_kde(x, y, z, p_est):
-    """ Evaluates p_est on a grid defined by the arrays, x, y, z
+    """ Evaluates p_est on a grid defined by the arrays, x, y, z. Also Works with Scipy Estiamtes
 
     :param x, y, z: 1D Arrays or Mesh Grids defining grid points
     :param p_est:

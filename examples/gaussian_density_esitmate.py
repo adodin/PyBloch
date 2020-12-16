@@ -5,45 +5,35 @@ import PyBloch.processing as proc
 # Simulation Details
 num_sample = 10000
 num_scatter = 2000
-mu_r = 0.
-std_r = 1.
-mu_theta = np.pi/2
-std_theta = np.pi/6
+grid_resolution = 50
+z_level = 25
 
-# Grid Plot details
-num_r = 50
-num_theta = 50
+# Distribution Details
+mu_x = 0.
+std_x = 0.01
+mu_y = 0.5
+std_y = 0.5
+mu_z = 0.
+std_z = 100.
 
-# Draw Sample Points
-rr = np.abs(np.random.normal(mu_r, std_r, size=num_sample))
-theta = np.random.normal(mu_theta, std_theta, size=num_sample)
-phi = np.random.uniform(0, 2*np.pi, size=num_sample)
-theta = theta + np.pi *(phi>np.pi)
+# Sample Points
+x = np.random.normal(mu_x, std_x, num_sample)
+y = np.random.normal(mu_y, std_y, num_sample)
+z = np.random.normal(mu_z, std_z, num_sample)
 
-# Convert to Cartesian Coordinates
-XX = rr * np.sin(theta)*np.cos(phi)
-YY = rr * np.sin(theta)*np.sin(phi)
-ZZ = rr * np.cos(theta)
+# Construct Grids
+grid_arr = np.linspace(-1, 1, grid_resolution)
+XX, YY, ZZ = np.meshgrid(grid_arr, grid_arr, grid_arr)
 
-# Generate Grids along phi = 0 azimuth
-r_grid = np.linspace(0, 1., num_r)
-theta_grid = np.linspace(0, 2*np.pi, num_theta)
-phi_grid = np.array([0.])
-r_grid, theta_grid, phi_grid = np.meshgrid(r_grid, theta_grid, phi_grid)
+# Evaluate Density Estimate
+print("Evaluating Density Estimate")
+kde = proc.gaussian_kde(x, y, z)
+print("Computing Density on Grid")
+print("Density Bandwidth is: " + str(kde.h))
+density = kde(XX, YY, ZZ)
+density = density/np.max(density)
 
-# Convert to Cartesian Grids
-x_grid = r_grid * np.sin(theta_grid)
-y_grid = np.zeros_like(x_grid)
-z_grid = r_grid * np.cos(theta_grid)
-
-p_est = proc.gaussian_kde(XX, YY, ZZ)
-dist = proc.evaluate_kde(x_grid, y_grid, z_grid, p_est)
-dist = dist/np.max(dist)
-
-
-fig = plt.figure()
-ax = fig.add_subplot(111, polar=True)
-ax.set_ylim([0., 1.])
-ax.pcolormesh(theta_grid[:, :, 0], r_grid[:, :, 0], dist[:, :, 0], vmin=0, vmax=1, shading='gouraud')
-ax.scatter(theta[0:num_scatter], rr[0:num_scatter], c='w', alpha=0.25)
+tester = np.cos(XX**2 + YY**2 + ZZ**2)
+plt.imshow(density[:, :, z_level], interpolation='bilinear',
+           origin='lower', extent=[-1., 1., -1., 1.], vmin=0., vmax=1.)
 plt.show()
