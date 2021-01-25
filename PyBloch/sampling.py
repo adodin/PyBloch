@@ -19,3 +19,16 @@ def sample_magnitudes(num_samples, dim):
     mags = rnd.uniform(0, 1, (num_samples, dim))
     mags = mags / la.norm(mags, axis=1, keepdims=True)
     return mags
+
+
+def sample_phases(num_samples, dim):
+    """ Samples Phase Factors for Wave-Functions Uniformly
+
+    :param num_samples: Number of Wavefunctions to Sample
+    :param dim: Hilbert Space Dimension
+    :return: (num_samples, dim) array of wavefunction magnitudes
+    """
+
+    phis = rnd.uniform(0, 2*np.pi, (num_samples, dim))
+    phases = np.exp(1j*phis)
+    return phases
