@@ -6,6 +6,15 @@ Written By: Amro Dodin (Willard Group - MIT)
 import numpy as np
 
 
+def convert_density_matrix(psi):
+    """ Convert Wavefunction to Density Matrix
+
+    :param psi: Wavefunction as normalized N-dim complex vector
+    :return: (NxN) pure state wavefunction
+    """
+    return np.matmul(np.expand_dims(psi, -1), np.conj(np.expand_dims(psi, -2)))
+
+
 def select_trajectories(x, y, z, n_plot):
     """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
 
