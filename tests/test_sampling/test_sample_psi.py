@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from PyBloch.sampling import sample_psis
 import numpy.linalg as la
-import numpy as np
+
 
 class TestSample_psis(TestCase):
     def test_sample_psis_shape_1_2(self):
@@ -16,6 +16,10 @@ class TestSample_psis(TestCase):
     def test_sample_psis_shape_10_24(self):
         psis = sample_psis(10, 24)
         self.assertEqual(psis.shape, (10, 24))
+
+    def test_sample_psis_shape_10_24_7(self):
+        psis = sample_psis(10, (24, 7))
+        self.assertEqual(psis.shape, (10, 24*7))
 
     def test_sample_psis_array_size(self):
         psis = sample_psis(10, 24)
