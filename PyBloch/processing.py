@@ -15,6 +15,55 @@ def convert_density_matrix(psi):
     return np.matmul(np.expand_dims(psi, -1), np.conj(np.expand_dims(psi, -2)))
 
 
+def partial_trace(rho, dims, bath_dims=None, sys_dims=None):
+    """ Performs Partial Trace of array of density matrices
+
+    :param rho: Array of density matrices
+    :param dims: array of dimensions of each system
+    :param bath_dims: indexes of bath hilbert spaces in dimension array
+    :param sys_dims:  indexes of system Hilbert spaces in dimension array. NB: use only one of bath_dims or sys_dims
+    :return: partially traced over array
+    """
+    # Grab and Check Density Matrix Dimensions
+    dims = np.array(dims)
+    assert len(rho.shape) == 3
+    n_sample, d1, d2 = rho.shape
+    assert d1 == d2
+    assert d1 == np.prod(dims)
+    n_sys = len(dims)
+
+    # Check that only one array specification is provided & that it is valid
+    assert ((bath_dims is None) or (sys_dims is None))
+    if bath_dims is not None:
+        bath_dims = np.array(bath_dims)
+        assert n_sys > len(bath_dims)
+        assert n_sys > np.max(bath_dims)
+    if sys_dims is not None:
+        sys_dims = np.array(sys_dims)
+        assert n_sys > len(sys_dims)
+        assert n_sys > np.max(sys_dims)
+
+    # Reshape Array Using System Dimensions
+    new_shape = np.concatenate([np.array([n_sample]), np.array(dims), np.array(dims)])
+    sigma = rho.reshape(new_shape)
+
+    # If sys_dims specified. Find bath_dims
+    if sys_dims is not None:
+        bath_dims = np.delete(np.arange(n_sys), sys_dims)
+
+    # For Specified Bath Indexes
+    assert bath_dims is not None
+    bath_dims=np.sort(bath_dims)[::-1]
+    for i in bath_dims:
+        ax1 = i + 1            # +1 because of run_num occupying index 0
+        ax2 = n_sys + i + 1
+        sigma = sigma.trace(axis1=ax1, axis2=ax2)
+        n_sys = n_sys - 1
+    dim_sigma = int(d1/(dims[bath_dims].prod()))
+
+    return sigma.reshape(n_sample, dim_sigma, dim_sigma)
+
+
 def select_trajectories(x, y, z, n_plot):
     """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
 
