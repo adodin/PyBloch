@@ -15,7 +15,52 @@ def convert_density_matrix(psi):
     return np.matmul(np.expand_dims(psi, -1), np.conj(np.expand_dims(psi, -2)))
 
 
-def partial_trace(rho, dims, bath_dims=None, sys_dims=None):
+def partial_trace_psi(psi, dims, bath_dims=None, sys_dims=None):
+    """ Computes reduced system density matrices from total system wavefunction
+    This method does not require the storage of total system density matrix.
+
+    :param psi: Array of total system wavefunctions
+    :param dims: array of dimensions of each system
+    :param bath_dims: indexes of bath hilbert spaces in dimension array
+    :param sys_dims:  indexes of system Hilbert spaces in dimension array. NB: use only one of bath_dims or sys_dims
+    :return: partially traced density matrix array
+    """
+    # Check Input Dimensions
+    dims = np.array(dims)
+    assert len(psi.shape) == 2
+    n_sample, d =psi.shape
+    assert d == dims.prod()
+    n_sys = len(dims)
+
+    # Check that only one array specification is provided & that it is valid
+    assert ((bath_dims is None) or (sys_dims is None))
+    if bath_dims is not None:
+        bath_dims = np.array(bath_dims)
+        assert n_sys > len(bath_dims)
+        assert n_sys > np.max(bath_dims)
+    if sys_dims is not None:
+        sys_dims = np.array(sys_dims)
+        assert n_sys > len(sys_dims)
+        assert n_sys > np.max(sys_dims)
+
+    # Reshape Array Using System Dimensions
+    new_shape = np.concatenate([np.array([n_sample]), dims])
+    psi_shaped = psi.reshape(new_shape)
+
+    # If bath_dims specified. Find sys_dims
+    if bath_dims is not None:
+        sys_dims = np.delete(np.arange(n_sys), bath_dims)
+
+    # Construct the Einsum specification
+    ein1 = np.concatenate([np.array([Ellipsis]), np.arange(n_sys)])
+    ein2 = np.concatenate([np.array([Ellipsis]), np.arange(n_sys)])
+    ein2[1 + sys_dims] = ein2[1 + sys_dims] + n_sys
+    dim_sigma = dims[sys_dims].prod()
+    sigma = np.einsum(psi_shaped, ein1, np.conj(psi_shaped), ein2)
+    return sigma.reshape(n_sample, dim_sigma, dim_sigma)
+
+
+def partial_trace_rho(rho, dims, bath_dims=None, sys_dims=None):
     """ Performs Partial Trace of array of density matrices
 
     :param rho: Array of density matrices

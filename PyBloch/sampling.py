@@ -33,6 +33,6 @@ def sample_nqubit(num_samples, num_qubits):
         sigmas = rhos
         del rhos
     else:
-        sigmas = proc.partial_trace(rhos, dims, sys_dims=[0])
+        sigmas = proc.partial_trace_rho(rhos, dims, sys_dims=[0])
         del rhos
     return proc.convert_bloch(sigmas)
