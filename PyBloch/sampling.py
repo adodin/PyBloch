@@ -6,6 +6,7 @@ Written By: Amro Dodin (Willard Group - MIYT)
 import numpy.random as rnd
 import numpy.linalg as la
 import numpy as np
+import PyBloch.processing as proc
 
 
 def sample_psis(num_samples, dim):
@@ -21,3 +22,17 @@ def sample_psis(num_samples, dim):
     comps = comps / la.norm(comps, axis=1, keepdims=True)
     psis = comps[:, :dim] + 1j*comps[:, dim:]
     return psis
+
+
+def sample_nqubit(num_samples, num_qubits):
+    dim = 2 ** num_qubits
+    dims = 2*np.ones(num_qubits, dtype=int)
+    psis = sample_psis(num_samples, dim)
+    rhos = proc.convert_density_matrix(psis)
+    if num_qubits == 1:
+        sigmas = rhos
+        del rhos
+    else:
+        sigmas = proc.partial_trace(rhos, dims, sys_dims=[0])
+        del rhos
+    return proc.convert_bloch(sigmas)

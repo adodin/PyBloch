@@ -64,6 +64,26 @@ def partial_trace(rho, dims, bath_dims=None, sys_dims=None):
     return sigma.reshape(n_sample, dim_sigma, dim_sigma)
 
 
+def convert_bloch(rhos):
+    """ Convert Density Matrices to cartesian Bloch Sphere coorsinates
+
+    :param rhos: (num_samples, 2, 2) array of sampled qubit density matrrices
+    :return: x, y, z real cartesian Bloch Coordinates
+    """
+    # Check Shape
+    n_samples, d1, d2 = rhos.shape
+    assert d1 == 2 == d2
+
+    # Calculate Bloch Components
+    r00 = rhos[:,0, 0]
+    r01 = rhos[:,0, 1]
+    r11 = rhos[:,1, 1]
+    x = 2*np.real(r01)
+    y = 2*np.imag(r01)
+    z = np.real(r11-r00)
+    return x, y, z
+
+
 def select_trajectories(x, y, z, n_plot):
     """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
 
