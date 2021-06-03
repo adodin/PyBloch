@@ -28,11 +28,18 @@ def sample_nqubit(num_samples, num_qubits):
     dim = 2 ** num_qubits
     dims = 2*np.ones(num_qubits, dtype=int)
     psis = sample_psis(num_samples, dim)
-    rhos = proc.convert_density_matrix(psis)
     if num_qubits == 1:
-        sigmas = rhos
-        del rhos
+        sigmas = proc.convert_density_matrix(psis)
     else:
-        sigmas = proc.partial_trace_rho(rhos, dims, sys_dims=[0])
-        del rhos
+        sigmas = proc.partial_trace_psi(psis, dims, sys_dims=[0])
     return proc.convert_bloch(sigmas)
+
+
+def batch_sample_nqubit(num_batch, samples_per_batch, num_qubits):
+    xx, yy, zz = [], [], []
+    for i in range(num_batch):
+        x, y, z = sample_nqubit(samples_per_batch, num_qubits)
+        xx.append(x)
+        yy.append(y)
+        zz.append(z)
+    return np.array(xx).flatten(), np.array(yy).flatten(), np.array(zz).flatten()
