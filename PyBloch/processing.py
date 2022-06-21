@@ -262,3 +262,7 @@ def evaluate_kde(x, y, z, p_est):
         return x, y, z, dist
     else:
         return dist
+
+
+def calculate_energy(psis, ham):
+    return np.sum(ham*abs(psis)**2, axis=1)
