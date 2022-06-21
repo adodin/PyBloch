@@ -6,6 +6,129 @@ Written By: Amro Dodin (Willard Group - MIT)
 import numpy as np
 
 
+def convert_density_matrix(psi):
+    """ Convert Wavefunction to Density Matrix
+
+    :param psi: Wavefunction as normalized N-dim complex vector
+    :return: (NxN) pure state wavefunction
+    """
+    return np.matmul(np.expand_dims(psi, -1), np.conj(np.expand_dims(psi, -2)))
+
+
+def partial_trace_psi(psi, dims, bath_dims=None, sys_dims=None):
+    """ Computes reduced system density matrices from total system wavefunction
+    This method does not require the storage of total system density matrix.
+
+    :param psi: Array of total system wavefunctions
+    :param dims: array of dimensions of each system
+    :param bath_dims: indexes of bath hilbert spaces in dimension array
+    :param sys_dims:  indexes of system Hilbert spaces in dimension array. NB: use only one of bath_dims or sys_dims
+    :return: partially traced density matrix array
+    """
+    # Check Input Dimensions
+    dims = np.array(dims)
+    assert len(psi.shape) == 2
+    n_sample, d =psi.shape
+    assert d == dims.prod()
+    n_sys = len(dims)
+
+    # Check that only one array specification is provided & that it is valid
+    assert ((bath_dims is None) or (sys_dims is None))
+    if bath_dims is not None:
+        bath_dims = np.array(bath_dims)
+        assert n_sys > len(bath_dims)
+        assert n_sys > np.max(bath_dims)
+    if sys_dims is not None:
+        sys_dims = np.array(sys_dims)
+        assert n_sys > len(sys_dims)
+        assert n_sys > np.max(sys_dims)
+
+    # Reshape Array Using System Dimensions
+    new_shape = np.concatenate([np.array([n_sample]), dims])
+    psi_shaped = psi.reshape(new_shape)
+
+    # If bath_dims specified. Find sys_dims
+    if bath_dims is not None:
+        sys_dims = np.delete(np.arange(n_sys), bath_dims)
+
+    # Construct the Einsum specification
+    ein1 = np.concatenate([np.array([Ellipsis]), np.arange(n_sys)])
+    ein2 = np.concatenate([np.array([Ellipsis]), np.arange(n_sys)])
+    ein2[1 + sys_dims] = ein2[1 + sys_dims] + n_sys
+    dim_sigma = dims[sys_dims].prod()
+    sigma = np.einsum(psi_shaped, ein1, np.conj(psi_shaped), ein2)
+    return sigma.reshape(n_sample, dim_sigma, dim_sigma)
+
+
+def partial_trace_rho(rho, dims, bath_dims=None, sys_dims=None):
+    """ Performs Partial Trace of array of density matrices
+
+    :param rho: Array of density matrices
+    :param dims: array of dimensions of each system
+    :param bath_dims: indexes of bath hilbert spaces in dimension array
+    :param sys_dims:  indexes of system Hilbert spaces in dimension array. NB: use only one of bath_dims or sys_dims
+    :return: partially traced over array
+    """
+    # Grab and Check Density Matrix Dimensions
+    dims = np.array(dims)
+    assert len(rho.shape) == 3
+    n_sample, d1, d2 = rho.shape
+    assert d1 == d2
+    assert d1 == np.prod(dims)
+    n_sys = len(dims)
+
+    # Check that only one array specification is provided & that it is valid
+    assert ((bath_dims is None) or (sys_dims is None))
+    if bath_dims is not None:
+        bath_dims = np.array(bath_dims)
+        assert n_sys > len(bath_dims)
+        assert n_sys > np.max(bath_dims)
+    if sys_dims is not None:
+        sys_dims = np.array(sys_dims)
+        assert n_sys > len(sys_dims)
+        assert n_sys > np.max(sys_dims)
+
+    # Reshape Array Using System Dimensions
+    new_shape = np.concatenate([np.array([n_sample]), np.array(dims), np.array(dims)])
+    sigma = rho.reshape(new_shape)
+
+    # If sys_dims specified. Find bath_dims
+    if sys_dims is not None:
+        bath_dims = np.delete(np.arange(n_sys), sys_dims)
+
+    # For Specified Bath Indexes
+    assert bath_dims is not None
+    bath_dims=np.sort(bath_dims)[::-1]
+    for i in bath_dims:
+        ax1 = i + 1            # +1 because of run_num occupying index 0
+        ax2 = n_sys + i + 1
+        sigma = sigma.trace(axis1=ax1, axis2=ax2)
+        n_sys = n_sys - 1
+    dim_sigma = int(d1/(dims[bath_dims].prod()))
+
+    return sigma.reshape(n_sample, dim_sigma, dim_sigma)
+
+
+def convert_bloch(rhos):
+    """ Convert Density Matrices to cartesian Bloch Sphere coorsinates
+
+    :param rhos: (num_samples, 2, 2) array of sampled qubit density matrrices
+    :return: x, y, z real cartesian Bloch Coordinates
+    """
+    # Check Shape
+    n_samples, d1, d2 = rhos.shape
+    assert d1 == 2 == d2
+
+    # Calculate Bloch Components
+    r00 = rhos[:,0, 0]
+    r01 = rhos[:,0, 1]
+    r11 = rhos[:,1, 1]
+    x = 2*np.real(r01)
+    y = 2*np.imag(r01)
+    z = np.real(r11-r00)
+    return x, y, z
+
+
 def select_trajectories(x, y, z, n_plot):
     """ Selects a valid set of trajectories. Randomly chosen if n_plot is int.
 
@@ -139,3 +262,7 @@ def evaluate_kde(x, y, z, p_est):
         return x, y, z, dist
     else:
         return dist
+
+
+def calculate_energy(psis, ham):
+    return np.sum(ham*abs(psis)**2, axis=1)

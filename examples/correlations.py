@@ -6,7 +6,7 @@ import PyBloch.animation as ani
 # Simulation Details
 num_traj = 2000
 num_time = 1000
-kick_size = 0.01
+kick_size = 0.1
 
 # Initialize Systems
 u, v, w = [np.random.normal(size=num_traj)], [np.random.normal(size=num_traj)], [np.random.normal(size=num_traj)]
