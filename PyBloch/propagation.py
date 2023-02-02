@@ -40,7 +40,7 @@ def rk_step(y0, t0, dt, deriv, a=rk4_a, b=rk4_b, c=rk4_c, deriv_kwargs ={}):
         if print_drive:
             d_dt, drive = deriv(yi, ti, **deriv_kwargs)
         else:
-            d_dt, drive = deriv(yi, ti, **deriv_kwargs)
+            d_dt = deriv(yi, ti, **deriv_kwargs)
         k.append(d_dt)
     for bi, ki in zip(b,k):
         y0 = bi * dt * ki + y0
@@ -67,8 +67,8 @@ def rk_prop(y0, t0, dt, tf, deriv, deriv_kwargs={}, rk_kwargs ={}):
         print_drive = deriv.print_drive
     else:
         print_drive = False
-    ys = []
-    ts = []
+    ys = [y0]
+    ts = [t0]
     if print_drive:
         ds = []
     y = y0
@@ -85,3 +85,7 @@ def rk_prop(y0, t0, dt, tf, deriv, deriv_kwargs={}, rk_kwargs ={}):
         return np.array(ys), np.array(ts), np.array(ds)
     else:
         return np.array(ys), np.array(ts)
+
+
+def liouville_deriv(y0, t0,  L):
+    return L@y0
