@@ -89,3 +89,23 @@ def rk_prop(y0, t0, dt, tf, deriv, deriv_kwargs={}, rk_kwargs ={}):
 
 def liouville_deriv(y0, t0,  L):
     return L@y0
+
+
+# TODO: Vectorize this function instead of t loop
+def exact_diag(y0, ts, L):
+    """ Propagation via exact Diagonalization. Exact  solution but only feasible for small or sparse Liouvillians.
+
+    :param y0: Initial State of system  expressed as Liouville space vector
+    :param ts: times at which states  are desired. Each is computed independently.
+    :param L: Liouvillian generator of  dynamics. Will be diagonalized.
+    :return: ys, ts: Mimics callback signature of RK propagator by parroting back ts
+    """
+    lam, Q = np.linalg.eig(L)
+    # Precompute Q_inv for efficiency
+    Q_inv = np.linalg.inv(Q)
+    ys = []
+    for t in ts:
+        ys.append(Q @ np.diag(np.exp(lam*t))@ Q_inv@ y0)
+
+    return np.array(ys), np.array(ts)
+

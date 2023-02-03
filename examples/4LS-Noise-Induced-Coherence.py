@@ -12,12 +12,13 @@ import PyBloch.propagation as prop
 y0 = np.array([1/2, 1/2, 0, 0, 0, 0, 0, 0])
 
 # Propagation Parameters
-tf = 100
+tf = 1000
+tf_explicit = 10**6
 
 # Coupling Parameters
 gamma = 1
-delta_g = 0.3
-delta_e = 0.
+delta_g = 0.01
+delta_e = 10
 
 n = 0.05
 gammas = gamma*np.array([[1, 1], [1, 1]])
@@ -25,6 +26,8 @@ gammas = gamma*np.array([[1, 1], [1, 1]])
 # Detect Suitable Time step
 gmax = np.max(gammas)
 dt = 0.1/np.max([gmax, delta_e, delta_g])
+
+t_plot = np.logspace(np.log10(dt)-2, np.log10(tf_explicit), num=100, base=10)
 
 # Alignment Parameters
 p_g1 = 1
@@ -150,19 +153,31 @@ L_ns[5, 7] = (1 + n) * (p_par * g_par - p_X * g_X)
 # Propagation
 # ------------------------------------------------------
 L = L_sec + L_u + L_ns
-print(L)
+
+#  RK propagation
 ys, ts = prop.rk_prop(y0, t0=0, tf=tf, dt=dt, deriv=prop.liouville_deriv, deriv_kwargs={'L': L})
+
+# Exact Diagonalization
+ys_diag, t_diag = prop.exact_diag(y0, t_plot, L)
 
 plt.rc('font', size=20)
 fig, ax = plt.subplots(2, 2)
 ax[0, 0].plot(ts, ys[:, 0], 'r')
 ax[0, 0].plot(ts, ys[:, 1], 'b', alpha=0.5)
+ax[0, 0].scatter(t_diag, ys_diag[:, 0], c='r')
+ax[0, 0].scatter(t_diag, ys_diag[:, 1], c='b', alpha=0.5)
 ax[0, 1].plot(ts, ys[:, 2], 'r')
 ax[0, 1].plot(ts, ys[:, 3], 'b', alpha=0.5)
+ax[0, 1].scatter(t_diag, ys_diag[:, 2], c='r')
+ax[0, 1].scatter(t_diag, ys_diag[:, 3], c='b', alpha=0.5)
 ax[1, 0].plot(ts, ys[:, 4], 'r')
 ax[1, 0].plot(ts, ys[:, 5], 'b', alpha=0.5)
+ax[1, 0].scatter(t_diag, ys_diag[:, 4], c='r')
+ax[1, 0].scatter(t_diag, ys_diag[:, 5], c='b', alpha=0.5)
 ax[1, 1].plot(ts, ys[:, 6], 'r')
 ax[1, 1].plot(ts, ys[:, 7], 'b', alpha=0.5)
+ax[1, 1].scatter(t_diag, ys_diag[:, 6], c='r')
+ax[1, 1].scatter(t_diag, ys_diag[:, 7], c='b', alpha=0.5)
 
 #plt.plot(ts, ys[:, 4], 'r')
 #plt.plot(ts, ys[:, 5], 'b', alpha=0.5)
@@ -173,7 +188,11 @@ plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #plt.title(r"$\Delta_g$={}$\gamma$, $\Delta_e$={}$\gamma$".format(delta_g, delta_e),
 #          fontdict={'size':20})
 #plt.ylim(-0.007,  0.007)
-plt.xlim(0, tf)
+#plt.xlim(0, tf_explicit)
+
+for a in ax.flatten():
+    a.set_xscale('log')
+ax[1,1].set_xscale('log')
 plt.tight_layout()
 
 plt.show()
