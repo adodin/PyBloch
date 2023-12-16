@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     rhos = proc.partial_trace_psi(samples, dims, sys_dims=[0])
     sigma = proc.convert_bloch(rhos)
-    np.save('outputs/open_sigma-T_0.15w0.npy', sigma)
+    np.save('../outputs/open_sigma-T_0.15w0.npy', sigma)
 
     bin_edges = np.linspace(-1, 1, 51)
     bins = np.linspace(-1, 1, 50)
